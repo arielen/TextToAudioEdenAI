@@ -2,17 +2,16 @@ import sys
 import os
 import re
 
-from argparse import (
-    ArgumentParser,
-    RawDescriptionHelpFormatter
-)
+from argparse import ArgumentParser, RawDescriptionHelpFormatter
+from pprint import pprint
+from dotenv import load_dotenv
+
 from text_to_speach import EdenAI
 
-
-from dotenv import load_dotenv
+# Load the environment variables
 load_dotenv()
 
-
+# Versioning and authorship information
 __version__ = "0.0.1"
 __author__ = "Arielen"
 __author_git__ = "https://github.com/arielen"
@@ -33,25 +32,44 @@ def main():
         description=f"{__description__}\n{version_string}",
     )
     parser.add_argument(
-        "-o", "--output", help="Output file name", default="output", required=False
+        "-o", "--output",
+        type=str, metavar="<file>", default="output", required=False,
+        help="Output file name (eg. --output output) [default: output]",
     )
     parser.add_argument(
-        "-l", "--language", help="Language", default="ru-RU", required=False
+        "-l", "--language",
+        type=str, metavar="<language>", default="ru-RU", required=False,
+        help="Language (eg. --language ru-RU) [default: ru-RU]",
     )
     parser.add_argument(
-        "-p", "--providers", help="Providers", default="lovoai", required=False
+        "-p", "--providers",
+        type=str, metavar="<providers>", default="lovoai", required=False,
+        help="Providers (eg. --providers lovoai) [default: lovoai]",5
     )
     parser.add_argument(
-        "-g", "--gender", help="Gender", default="MALE", required=False
+        "-g", "--gender",
+        type=str, metavar="<gender>", default="MALE", required=False,
+        help="Gender (eg. --gender MALE) [default: MALE] [MALE, FEMALE]",
     )
     parser.add_argument(
-        "-k", "--key", help="API key", default=API_KEY, required=False
+        "-k", "--key",
+        type=str, metavar="<key>", default=API_KEY, required=False,
+        help="EdenAI API key (eg. --key API_KEY) [default: API_KEY from .env]",
     )
     parser.add_argument(
-        "-t", "--text", help="Text", required=False
+        "-t", "--text",
+        type=str, metavar="<text>", required=False,
+        help="Input text (eg. --text text) [default: None]",
     )
     parser.add_argument(
-        "-f", "--file", help="File", required=False, default="input.txt"
+        "-f", "--file",
+        type=str, metavar="<file>", default="input.txt", required=False,
+        help="Input file (eg. --file input.txt) [default: input.txt]",
+    )
+    parser.add_argument(
+        "--get-supported-models",
+        type=str, metavar="<language>", default="en", required=False,
+        help="Get list of supported models by language (eg. --get-supported-models ru) [default: en]",
     )
     parser.add_argument(
         "-v", "--version", action="version", version=version_string
@@ -62,7 +80,12 @@ def main():
 
     if args.text:
         eden.text_to_speach(args.text, args.output)
-        print(f"Output file: {args.output}")
+    elif args.get_supported_models:
+        pprint(
+            eden.get_supported_models_by_language(args.get_supported_models),
+            sort_dicts=True, compact=True, width=100
+        )
+        return
     elif args.file:
         if not os.path.exists(args.file):
             print(f"File not found: {args.file}")

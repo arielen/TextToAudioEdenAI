@@ -7,7 +7,8 @@ from typing import List, Dict
 
 class EdenAI:
     providers: List[str] = [
-        "lovoai", "google", "microsoft", "amazon", "ibm",
+        "openai", "deepgram", "google", "elevenlabs",
+        "ibm", "lovoai", "microsoft", "amazon",
     ]
     languages: Dict[str, str] = {
         "russian": "ru-RU", "english": "en-US", "spanish": "es-ES",
@@ -48,19 +49,36 @@ class EdenAI:
         url = "https://api.edenai.run/v2/audio/text_to_speech"
 
         payload = {
-            "providers": self.providers,
+            "providers": f"{self.providers}/ru-RU_Pyotr Semenov",
             "language": self.language,
             "option": self.gender,
-            self.providers: "ru-RU_Alexei Syomin",
             "text": text
         }
-
         response = requests.post(url, json=payload, headers=headers)
         result = json.loads(response.text)
 
-        audio_url = result.get(self.providers).get("audio_resource_url")
-        r = requests.get(audio_url)
+        try:
+            audio_url = result[self.providers]["audio_resource_url"]
+            r = requests.get(audio_url)
 
-        file_name = file_name or str(int(time.time()))
-        with open(f"{file_name}.mp3", "wb") as f:
-            f.write(r.content)
+            file_name = file_name or str(int(time.time()))
+            with open(f"{file_name}.mp3", "wb") as f:
+                f.write(r.content)
+        except KeyError:
+            print("Error: {err}".format(err=result.get('No more credits')))
+        except AttributeError:
+            if result.get("detail") == "Invalid Api Key":
+                print("Invalid Api Key")
+            else:
+                raise
+
+    def get_supported_models_by_language(self, language: str = 'en') -> Dict[str, str | List[str]]:
+        with open("models.json", "r", encoding="utf-8") as f:
+            data_models = json.load(f)
+
+        result = {}
+
+        for model, data in data_models.items():
+            result[model] = [mod for mod in data if mod.startswith(language)]
+
+        return result
