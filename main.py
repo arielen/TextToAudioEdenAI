@@ -44,7 +44,7 @@ def main():
     parser.add_argument(
         "-p", "--providers",
         type=str, metavar="<providers>", default="lovoai", required=False,
-        help="Providers (eg. --providers lovoai) [default: lovoai]",5
+        help="Providers (eg. --providers lovoai) [default: lovoai]",
     )
     parser.add_argument(
         "-g", "--gender",
